@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>周时 Zhou Shi</title>
+<meta name="description" content="周时，吉林大学软件学院研究生，研究方向为自然语言处理、LLM Agent 与 RAG。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;900&display=swap">
+<style>
+/* Layout: two-column hero (intro | live retriever over this page), then label-left / content-right sections. */
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --ink: #14171c;
+  --muted: #5a6271;
+  --line: #dce0e7;
+  --accent: #2c47cf;
+  --accent-soft: rgba(44, 71, 207, 0.08);
+  --mark: rgba(240, 180, 40, 0.38);
+
+  --f-display: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --f-body: "IBM Plex Sans", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --s-xs: 0.8125rem;
+  --s-sm: 0.9375rem;
+  --s-md: 1.0625rem;
+  --s-lg: 1.375rem;
+  --s-xl: clamp(3rem, 8vw, 5.25rem);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a21; --ink: #e6e9ef; --muted: #98a1b0;
+    --line: #272d38; --accent: #8fa3ff; --accent-soft: rgba(143, 163, 255, 0.1);
+    --mark: rgba(240, 180, 40, 0.28); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a21; --ink: #e6e9ef; --muted: #98a1b0;
+  --line: #272d38; --accent: #8fa3ff; --accent-soft: rgba(143, 163, 255, 0.1);
+  --mark: rgba(240, 180, 40, 0.28); color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: var(--s-md);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- hero ---------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(32px, 6vw, 72px);
+  align-items: start;
+  padding-block: clamp(48px, 10vw, 104px) clamp(40px, 7vw, 72px);
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: var(--s-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.name {
+  font-family: var(--f-display);
+  font-weight: 900;
+  font-size: var(--s-xl);
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  margin: 14px 0 6px;
+}
+.name small {
+  display: block;
+  font-family: var(--f-body);
+  font-weight: 500;
+  font-size: var(--s-md);
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.role {
+  font-size: var(--s-lg);
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 24px 0 0;
+  text-wrap: balance;
+}
+.lede {
+  color: var(--muted);
+  margin: 14px 0 0;
+  max-width: 34em;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 28px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--f-mono);
+  font-size: var(--s-xs);
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--surface);
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.chip svg { width: 14px; height: 14px; flex: none; }
+button.chip { font: inherit; font-family: var(--f-mono); font-size: var(--s-xs); }
+
+/* ---------- retriever panel ---------- */
+.rag {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: var(--f-mono);
+  font-size: var(--s-xs);
+  min-width: 0;
+}
+.rag-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+}
+.rag-body { padding: 16px; display: grid; gap: 14px; }
+.step { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.step .k { color: var(--muted); }
+.step .k b { color: var(--accent); font-weight: 500; }
+.q-row { display: flex; gap: 8px; }
+.q-row input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-family: var(--f-body);
+  font-size: var(--s-sm);
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+.q-row input:focus { outline: none; border-color: var(--accent); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.presets button {
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: transparent;
+  border: 1px dashed var(--line);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.presets button:hover { color: var(--accent); border-color: var(--accent); }
+.hits { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.hit {
+  display: grid;
+  grid-template-columns: 3.2em minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  animation: in 0.35s ease both;
+}
+.hit:nth-child(2) { animation-delay: 0.06s; }
+.hit:nth-child(3) { animation-delay: 0.12s; }
+.score { font-variant-numeric: tabular-nums; color: var(--accent); }
+.bar { height: 3px; border-radius: 2px; background: var(--line); margin-top: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.hit .t { font-family: var(--f-body); font-size: var(--s-sm); line-height: 1.55; color: var(--ink); }
+.hit .src { color: var(--muted); font-size: 0.75rem; }
+.hit mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+.empty { color: var(--muted); }
+.rag-foot { padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.75rem; }
+@keyframes in { from { opacity: 0.2; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+/* ---------- sections ---------- */
+.section {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 24px 48px;
+  padding-block: 44px;
+  border-top: 1px solid var(--line);
+}
+.section h2 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: var(--s-lg);
+  line-height: 1.3;
+  margin: 0;
+}
+.section h2 span {
+  display: block;
+  font-family: var(--f-mono);
+  font-weight: 400;
+  font-size: var(--s-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.interests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+.interests h3 { font-size: var(--s-md); font-weight: 600; margin: 0 0 6px; }
+.interests h3 code { font-family: var(--f-mono); font-size: var(--s-xs); font-weight: 400; color: var(--accent); margin-left: 6px; }
+.interests p { margin: 0; color: var(--muted); font-size: var(--s-sm); }
+
+.projects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; }
+.proj { padding-block: 18px; border-bottom: 1px solid var(--line); min-width: 0; }
+.proj:nth-last-child(-n+2):nth-child(odd), .proj:last-child { border-bottom: 0; }
+.proj-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.proj a.title { font-weight: 600; font-size: var(--s-md); color: var(--ink); overflow-wrap: anywhere; }
+.proj a.title:hover { color: var(--accent); }
+.meta { font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.proj p { margin: 6px 0 0; font-size: var(--s-sm); color: var(--muted); }
+
+.contact { display: grid; gap: 14px; }
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.row .lbl { font-family: var(--f-mono); font-size: var(--s-xs); color: var(--muted); width: 5em; }
+.row .val { font-family: var(--f-mono); font-size: var(--s-sm); user-select: all; overflow-wrap: anywhere; }
+.copy { font: inherit; font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 4px; padding: 2px 8px; cursor: pointer; }
+.copy:hover { color: var(--accent); border-color: var(--accent); }
+
+footer { padding-block: 28px 48px; border-top: 1px solid var(--line); font-family: var(--f-mono); font-size: 0.75rem; color: var(--muted); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+
+@media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .section { grid-template-columns: minmax(0, 1fr); }
+  .interests { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+}
+@media (max-width: 640px) {
+  .projects { grid-template-columns: minmax(0, 1fr); }
+  .proj:nth-last-child(-n+2):nth-child(odd) { border-bottom: 1px solid var(--line); }
+  .step { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
+@media (prefers-reduced-motion: reduce) { .hit { animation: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="eyebrow">NLP · LLM Agent · RAG</div>
+      <h1 class="name">周时<small>Zhou Shi · @Arczotis</small></h1>
+      <p class="role">吉林大学 软件学院 研究生</p>
+      <p class="lede">研究方向是自然语言处理，主要关注大语言模型 Agent 与检索增强生成（RAG）：让模型会查资料、会用工具，并把多步任务做完。课余也写一些 macOS 小工具和可视化页面。</p>
+      <nav class="links" aria-label="外部链接">
+        <a class="chip" href="https://github.com/Arczotis" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          github.com/Arczotis
+        </a>
+        <button class="chip" type="button" id="copy-email-hero" data-copy="841530503@qq.com">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="1.5" y="3" width="13" height="10" rx="1.5"/><path d="M2 4l6 5 6-5"/></svg>
+          <span>841530503@qq.com</span>
+        </button>
+      </nav>
+    </div>
+
+    <section class="rag" aria-label="检索演示">
+      <div class="rag-head"><span>retriever.search()</span><span id="kcount">top_k = 3</span></div>
+      <div class="rag-body">
+        <div class="step">
+          <span class="k"><b>Query</b></span>
+          <div>
+            <form class="q-row" id="qform">
+              <label for="q" class="eyebrow" hidden>检索问题</label>
+              <input id="q" type="text" value="研究方向是什么" autocomplete="off">
+            </form>
+            <div class="presets" id="presets">
+              <button type="button">做过哪些项目</button>
+              <button type="button">怎么联系</button>
+              <button type="button">RAG</button>
+              <button type="button">macOS</button>
+            </div>
+          </div>
+        </div>
+        <div class="step">
+          <span class="k">Retrieve</span>
+          <ul class="hits" id="hits"></ul>
+        </div>
+      </div>
+      <div class="rag-foot">在本页 12 个文本片段上做字符 bigram 余弦相似度检索，纯前端计算，不调用模型。</div>
+    </section>
+  </header>
+
+  <section class="section" id="research">
+    <h2>研究兴趣<span>Research</span></h2>
+    <div class="interests">
+      <div>
+        <h3>LLM Agent<code>plan → act</code></h3>
+        <p>工具调用、任务规划与多步推理。关注 Agent 在长链路任务中如何保持目标、纠正错误。</p>
+      </div>
+      <div>
+        <h3>RAG<code>retrieve → generate</code></h3>
+        <p>检索、重排与生成的完整流程，以及如何让回答有据可查、减少幻觉。</p>
+      </div>
+      <div>
+        <h3>NLP 基础<code>tokens</code></h3>
+        <p>Transformer 结构、低精度量化格式（如 MXFP4），以及在有限显存上跑通实验。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="projects">
+    <h2>项目<span>Projects</span></h2>
+    <div class="projects">
+      <article class="proj">
+        <div class="proj-top"><a class="title" href="https://github.com/Arczotis/MusicRateSwitcher" target="_blank" rel="noopener">MusicRateSwitcher</a><span class="meta">Swift · ★16</span></div>
+        <p>macOS 菜单栏应用，自动让声卡输出采样率匹配 Apple Music、网易云音乐、QQ 音乐和汽水音乐正在播放的音轨。</p>
+      </article>
+      <article class="proj">
+        <div class="proj-top"><a class="title" href="https://github.com/Arczotis/LLM-toy" target="_blank" rel="noopener">LLM-toy</a><span class="meta">Jupyter · ★3</span></div>
+        <p>为 8GB 显存笔记本配置的大模型学习环境：本地跑 GPT-2 等小模型学原理，同时接入 DeepSeek API 做 RAG 和推理实验。</p>
+      </article>
+      <article class="proj">
+        <div class="proj-top"><a class="title" href="https://github.com/Arczotis/mxfp4-visualizer" target="_blank" rel="noopener">mxfp4-visualizer</a><span class="meta">React · ★1</span></div>
+        <p>MXFP4 微缩放浮点格式的交互式可视化，展示编码、解码过程和量化误差分布。</p>
+      </article>
+      <article class="proj">
+        <div class="proj-top"><a class="title" href="https://github.com/Arczotis/auto-adaptation-system" target="_blank" rel="noopener">auto-adaptation-system</a><span class="meta">React</span></div>
+        <p>国产操作系统上 AI 框架自动适配系统的演示：环境探查、策略生成、构建部署、自动验证四层流程。</p>
+      </article>
+      <article class="proj">
+        <div class="proj-top"><a class="title" href="https://github.com/Arczotis/v2rayN" target="_blank" rel="noopener">v2rayN for macOS</a><span class="meta">C# · fork</span></div>
+        <p>v2rayN 的非官方分支，重新设计了 macOS 端界面。</p>
+      </article>
+      <article class="proj">
+        <div class="proj-top"><a class="title" href="https://github.com/Arczotis?tab=repositories" target="_blank" rel="noopener">更多仓库 →</a><span class="meta">GitHub</span></div>
+        <p>早期的课程项目和练习：贝叶斯分类器、KNN 旗帜识别、传统节日符号检测等。</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="contact">
+    <h2>联系<span>Contact</span></h2>
+    <div class="contact">
+      <div class="row">
+        <span class="lbl">Email</span>
+        <a class="val" href="mailto:841530503@qq.com">841530503@qq.com</a>
+        <button class="copy" type="button" id="copy-email" data-copy="841530503@qq.com">复制</button>
+      </div>
+      <div class="row">
+        <span class="lbl">GitHub</span>
+        <a class="val" href="https://github.com/Arczotis" target="_blank" rel="noopener">github.com/Arczotis</a>
+      </div>
+      <div class="row">
+        <span class="lbl">单位</span>
+        <span class="val" style="user-select:text">吉林大学 软件学院 · 长春</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 周时</span>
+    <span>最后更新 2026-10</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  // Corpus: the facts on this page, as chunks. `tags` widen recall for short queries.
+  var DOCS = [
+    { src: "简介", t: "周时，吉林大学软件学院研究生。", tags: "谁 名字 学校 学历 jlu" },
+    { src: "简介", t: "研究方向：自然语言处理，主要关注大语言模型 Agent 与检索增强生成（RAG）。", tags: "研究 方向 兴趣 nlp llm" },
+    { src: "研究兴趣", t: "LLM Agent：工具调用、任务规划与多步推理，以及长链路任务中的纠错。", tags: "agent 智能体 研究 方向" },
+    { src: "研究兴趣", t: "RAG：检索、重排与生成的完整流程，让回答有据可查、减少幻觉。", tags: "rag retrieval 检索 研究 方向" },
+    { src: "研究兴趣", t: "NLP 基础：Transformer 结构、MXFP4 等低精度量化格式。", tags: "transformer 量化 研究" },
+    { src: "项目", t: "MusicRateSwitcher：macOS 菜单栏应用，自动匹配音乐播放器的输出采样率，GitHub 16 星。", tags: "项目 swift macos 音乐 做过" },
+    { src: "项目", t: "LLM-toy：8GB 显存上的大模型学习环境，接入 DeepSeek API 做 RAG 实验。", tags: "项目 llm rag 做过 jupyter" },
+    { src: "项目", t: "mxfp4-visualizer：MXFP4 浮点格式的交互式可视化。", tags: "项目 量化 react 做过" },
+    { src: "项目", t: "auto-adaptation-system：国产操作系统 AI 框架自动适配系统演示。", tags: "项目 react 做过" },
+    { src: "项目", t: "v2rayN for macOS：重新设计了 macOS 界面的非官方分支。", tags: "项目 macos c# 做过" },
+    { src: "联系", t: "邮箱：841530503@qq.com", tags: "联系 email 邮件 邮箱 qq 怎么" },
+    { src: "联系", t: "GitHub：github.com/Arczotis", tags: "联系 github 代码 主页 怎么" }
+  ];
+
+  function grams(s) {
+    s = s.toLowerCase().replace(/[\s，。：、（）()·,.:;!?？！]+/g, " ");
+    var v = {}, parts = s.split(" ");
+    for (var p = 0; p < parts.length; p++) {
+      var w = parts[p];
+      if (!w) continue;
+      if (/^[a-z0-9#+-]+$/.test(w)) { v[w] = (v[w] || 0) + 2; continue; }
+      for (var i = 0; i < w.length; i++) {
+        var u = w[i]; v[u] = (v[u] || 0) + 0.5;
+        if (i + 1 < w.length) { var b = w.substr(i, 2); v[b] = (v[b] || 0) + 1; }
+      }
+    }
+    return v;
+  }
+  function cos(a, b) {
+    var dot = 0, na = 0, nb = 0, k;
+    for (k in a) { na += a[k] * a[k]; if (b[k]) dot += a[k] * b[k]; }
+    for (k in b) nb += b[k] * b[k];
+    return na && nb ? dot / Math.sqrt(na * nb) : 0;
+  }
+  var VECS = DOCS.map(function (d) { return grams(d.t + " " + d.tags); });
+
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function highlight(text, q) {
+    var terms = {}, qs = q.toLowerCase().replace(/[\s，。？?！!]+/g, " ").split(" ");
+    qs.forEach(function (w) {
+      if (/^[a-z0-9#+-]+$/.test(w)) { if (w.length > 1) terms[w] = 1; }
+      else for (var i = 0; i + 1 < w.length; i++) terms[w.substr(i, 2)] = 1;
+    });
+    var list = Object.keys(terms).filter(Boolean);
+    if (!list.length) return esc(text);
+    var re = new RegExp("(" + list.map(function (t) { return t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }).join("|") + ")", "gi");
+    return esc(text).replace(re, "<mark>$1</mark>");
+  }
+
+  var input = document.getElementById("q"), hits = document.getElementById("hits");
+  function run() {
+    var q = input.value.trim();
+    if (!q) { hits.innerHTML = '<li class="empty">输入一个问题，比如“研究方向是什么”。</li>'; return; }
+    var qv = grams(q);
+    var ranked = DOCS.map(function (d, i) { return { d: d, s: cos(qv, VECS[i]) }; })
+      .filter(function (r) { return r.s > 0.02; })
+      .sort(function (a, b) { return b.s - a.s; }).slice(0, 3);
+    if (!ranked.length) { hits.innerHTML = '<li class="empty">没有检索到相关片段，换个说法试试。</li>'; return; }
+    hits.innerHTML = ranked.map(function (r) {
+      var pct = Math.min(100, Math.round(r.s * 100));
+      return '<li class="hit"><div><div class="score">' + r.s.toFixed(2) + '</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+        '<div><div class="t">' + highlight(r.d.t, q) + '</div><div class="src">§ ' + r.d.src + '</div></div></li>';
+    }).join("");
+  }
+  document.getElementById("qform").addEventListener("submit", function (e) { e.preventDefault(); run(); });
+  var timer; input.addEventListener("input", function () { clearTimeout(timer); timer = setTimeout(run, 160); });
+  document.getElementById("presets").addEventListener("click", function (e) {
+    if (e.target.tagName === "BUTTON") { input.value = e.target.textContent; run(); }
+  });
+  run();
+
+  // Copy buttons: clipboard inside the click handler, fall back to selecting the text.
+  document.querySelectorAll("[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = btn.getAttribute("data-copy");
+      var label = btn.querySelector("span") || btn, old = label.textContent;
+      function done(msg) { label.textContent = msg; setTimeout(function () { label.textContent = old; }, 1400); }
+      function fallback() {
+        var r = document.createRange(); r.selectNodeContents(label);
+        var sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); done(old);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done("已复制邮箱"); }, fallback);
+      } else fallback();
+    });
+  });
+})();
+</script>
+</body>
+</html>
